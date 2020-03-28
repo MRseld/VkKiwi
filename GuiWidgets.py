@@ -206,27 +206,27 @@ class DialogListWidget(QtWidgets.QWidget):
             else:
                 self.LoadGroupDialog(Converstations, i)
         self.newoffset = self.newoffset + len(Converstations.response.items)
-        
-        #for i in range(0, len(Converstations.response.items)):
-         #   try:
-          #      if (str(Converstations.response.items[i].conversation.peer.type) == "TypeEnum.CHAT"):
-           #         tz = Thread(target=self.LoadChatImage,
-            #                    args=(Converstations, i))
-                   
-             #       tz.start()
-              #  elif (str(Converstations.response.items[i].conversation.peer.type) == "TypeEnum.USER"):
-               #     tz = Thread(target=self.LoadUserImage,
-                #                args=(Converstations, i))
-                 #   tz.start()
-                #else:
-                 #   tz = Thread(target=self.loadGroupImage,
-                  #              args=(Converstations, i))
-                 #   tz.start()
-            #except Exception as ex:
-             #   print(ex)
+        """        
+        for i in range(0, len(Converstations.response.items)):
+            try:
+                if (str(Converstations.response.items[i].conversation.peer.type) == "TypeEnum.CHAT"):
+                    tz = Thread(target=self.LoadChatImage,
+                                args=(Converstations, i))
+                    tz.start()
+                elif (str(Converstations.response.items[i].conversation.peer.type) == "TypeEnum.USER"):
+                    tz = Thread(target=self.LoadUserImage,
+                               args=(Converstations, i))
+                    tz.start()
+                else:
+                    tz = Thread(target=self.loadGroupImage,
+                                args=(Converstations, i))
+                    tz.start()
+            except Exception as ex:
+                print(ex)
         self.oldoffset = self.oldoffset + len(Converstations.response.items)
+        """
         self.loading=False
-
+    """
     def loadGroupImage(self, conversations: convestationsObject.Convestation, index: int):
         conversation = conversations.response.items[index].conversation
         for i in range(0, len(conversations.response.groups)):
@@ -263,7 +263,7 @@ class DialogListWidget(QtWidgets.QWidget):
                 conversation.conversation.chat_settings.photo.photo_50))
             time.sleep(0.2)
             
-
+    """
     def startloadImage(self, url):
         self.loader.Loadimage(url)
 
@@ -291,7 +291,6 @@ class DialogListWidget(QtWidgets.QWidget):
                   self.trigger.emit(group.id, 0, title, textMessage,group.photo_50)
                 break
 
-          # Получение данных о юзере
     def LoadUserDialog(self, conversations: convestationsObject.Convestation, index: int):
         if(len(conversations.response.items[index].last_message.fwd_messages) > 0):
             textMessage = "[Пересланные сообщения]"

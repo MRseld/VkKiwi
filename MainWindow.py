@@ -1,16 +1,16 @@
 import LoginWindow
 import GuiWidgets
-from PyQt5.QtCore import QThread, QTimer
-from PyQt5 import QtWidgets 
-from PyQt5 import QtGui
-from PyQt5 import QtCore
+from PySide2.QtCore import QTimer 
+from PySide2 import QtWidgets 
+from PySide2 import QtGui
+from PySide2 import QtCore
 import settings
 import ApiCalls
-        
+from threading import Thread
 class MyTableWidget(QtWidgets.QWidget):
     
     def __init__(self, parent):
-        super(QtWidgets.QWidget, self).__init__(parent)
+        super(MyTableWidget,self).__init__(parent)
         self.layout = QtWidgets.QVBoxLayout(self)   
         self.tabs = QtWidgets.QTabWidget()
 
@@ -26,9 +26,12 @@ class MyTableWidget(QtWidgets.QWidget):
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
 
+
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
+        
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.timer = QTimer(self)
@@ -42,8 +45,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.timer.start(300)   
         else:
             self.show()
+    
    
-       
+
     def initUi(self):
         self.mainLayout=QtWidgets.QVBoxLayout()
         self.table_widget = MyTableWidget(self)
@@ -74,6 +78,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.window.hide()
             self.window.deleteLater()
             self.showWidnow()
+            
+            
             
            
             

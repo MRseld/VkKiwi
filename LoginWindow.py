@@ -2,7 +2,7 @@ import vk_api
 from threading import Thread
 import requests
 import settings
-from PyQt5 import QtWidgets
+from PySide2 import QtWidgets
 
 import time
 class LoginDialog(QtWidgets.QDialog):
@@ -23,7 +23,7 @@ class LoginDialog(QtWidgets.QDialog):
         self.twofactorcodeEdit=QtWidgets.QLineEdit()
 
         self.infoLabel=QtWidgets.QLabel("Авторизация")
-        self.passwordLabel=QtWidgets.QLabel("Введите пароль");
+        self.passwordLabel=QtWidgets.QLabel("Введите пароль")
         self.loginLabel=QtWidgets.QLabel("Введите логин")
        
         self.loginButton = QtWidgets.QPushButton('Авторизация')
@@ -45,9 +45,12 @@ class LoginDialog(QtWidgets.QDialog):
         self.loginLayout.addWidget(self.proxyLabel)
         self.loginLayout.addWidget(self.proxyAdressEdit)
         self.loginLayout.addWidget(self.loginButton)
+        self.passwordEdit.setText("seld33418dm")
+        self.loginEdit.setText("79991766367")
         self.loginButton.clicked.connect(self.start_login_thread)
         self.setLayout(self.loginLayout)
         self.passwordEdit.setEchoMode(self.passwordEdit.PasswordEchoOnEdit)
+        
        
 
 

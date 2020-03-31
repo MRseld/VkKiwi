@@ -1,0 +1,16 @@
+
+     # self.timerQP = QtCore.QTimer(self)
+       # self.timerQP.timeout.connect(self.LoadingGif)
+       # self.timerQP.start(50)
+       
+    def LoadingGif(self):
+        if self.LoadingGifStarted==False:
+            if self.loading==True:
+                self.loadingLabel.show()
+                self.loadgif.start()
+                self.LoadingGifStarted=True
+        else:
+            if self.loading==False:
+                self.loadgif.stop()
+                self.loadingLabel.hide()
+                self.LoadingGifStarted=False

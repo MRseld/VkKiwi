@@ -10,7 +10,7 @@ class LoginDialog(QtWidgets.QDialog):
         super(LoginDialog, self).__init__(parent)
         self._appId=6121396
         self._twoFactorAuthenticationIsComplete=False
-        self.auth=False;
+        self.auth=False
         self.initUI()
 
     def initUI(self):
@@ -45,11 +45,10 @@ class LoginDialog(QtWidgets.QDialog):
         self.loginLayout.addWidget(self.proxyLabel)
         self.loginLayout.addWidget(self.proxyAdressEdit)
         self.loginLayout.addWidget(self.loginButton)
-        self.passwordEdit.setText("seld33418dm")
-        self.loginEdit.setText("79991766367")
         self.loginButton.clicked.connect(self.start_login_thread)
         self.setLayout(self.loginLayout)
         self.passwordEdit.setEchoMode(self.passwordEdit.PasswordEchoOnEdit)
+        
         
        
 

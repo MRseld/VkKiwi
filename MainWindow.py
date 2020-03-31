@@ -12,17 +12,17 @@ class MyTableWidget(QtWidgets.QWidget):
     def __init__(self, parent):
         super(MyTableWidget,self).__init__(parent)
         self.layout = QtWidgets.QVBoxLayout(self)   
+        
         self.tabs = QtWidgets.QTabWidget()
 
         self.dialoglist= GuiWidgets.DialogListWidget(self)
 
-        self.dialogtab =QtWidgets.QWidget()
-        self.tabs.addTab(self.dialogtab,"Диалоги")
-        self.dialogtab.layout = QtWidgets.QVBoxLayout(self)
+        
+       
+        self.tabs.addTab(self.dialoglist,"Диалоги")
+        self.tabs.addTab(GuiWidgets.SetttingsWidget(self),"Настрйки")
 
-        self.dialogtab.layout.addWidget(self.dialoglist)
-
-        self.dialogtab.setLayout(self.dialogtab.layout)       
+       
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
 
@@ -47,6 +47,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.show()
     
    
+  
 
     def initUi(self):
         self.mainLayout=QtWidgets.QVBoxLayout()
@@ -61,11 +62,28 @@ class MainWindow(QtWidgets.QMainWindow):
 
         action1 = self.menu.addAction('закрыть')
         action1.triggered.connect(self.close)
+        
+        action2 = self.menu.addAction('закрпеить')
+        action2.triggered.connect(self.pin)
+        
+        action3 = self.menu.addAction('Открепить')
+        action3.triggered.connect(self.unpin)
 
 
-  
+    def pin(self):
+        self.hide()
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        self.show()
+
+    def unpin(self):
+        self.hide()
+        self.setAttribute(QtCore.Qt.WA_NoSystemBackground, False)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground,False)
+        self.setWindowFlags(QtCore.Qt.Window)
+        self.show()
+
     def show_context_menu(self, point):
-        self.menu.exec(self.mapToGlobal(point))
+        self.menu.exec_(self.mapToGlobal(point))
 
     def showWidnow(self):
         self.initUi()

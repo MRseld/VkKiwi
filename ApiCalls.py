@@ -26,8 +26,13 @@ def VkApiCallMethod(method:str,params:list):
 class Messages():
     def get(self,count,offset,extended):
       
-            z=VkApiCallMethod("messages.getConversations",["extended="+str(extended), "count="+str(count),"offset="+str(offset)])
-            return json.loads(z)
+        return json.loads(VkApiCallMethod("messages.getConversations",["extended="+str(extended), "count="+str(count),"offset="+str(offset)]))
+           
+    def getHistory(self,count,offset,peer_id,rev, extended):
+        return json.loads( VkApiCallMethod("messages.getHistory",["count="+str(count),"offset="+str(offset),"peer_id="+str(peer_id),
+        "rev="+str(rev),"extended="+str(extended)]) )
+
+        
 
       
 
@@ -40,7 +45,7 @@ class LongPoll():
     _mode=None
     def getLongPollServer(self):
       
-          longpoll=json.loads( VkApiCallMethod("messages.getLongPollServer",["lp_version=3"]))  
+          longpoll=json.loads(VkApiCallMethod("messages.getLongPollServer",["lp_version=3"]) )
           self.setKey(longpoll["response"]["key"])
           self.setTs(longpoll["response"]["ts"])
           self.setServer(longpoll["response"]["server"]) 

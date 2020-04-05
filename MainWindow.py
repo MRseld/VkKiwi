@@ -1,12 +1,15 @@
 import LoginWindow
-import GuiWidgets
 from PySide2.QtCore import QTimer 
 from PySide2 import QtWidgets 
 from PySide2 import QtGui
 from PySide2 import QtCore
 import settings
+import settingsWidget
+import DialogListWidget
+import DialogWidget
 import ApiCalls
 from threading import Thread
+import  time
 class MyTableWidget(QtWidgets.QWidget):
     
     def __init__(self, parent):
@@ -14,20 +17,26 @@ class MyTableWidget(QtWidgets.QWidget):
         self.layout = QtWidgets.QVBoxLayout(self)   
         
         self.tabs = QtWidgets.QTabWidget()
-
-        self.dialoglist= GuiWidgets.DialogListWidget(self)
-
-        
-       
-        self.tabs.addTab(self.dialoglist,"Диалоги")
-        self.tabs.addTab(GuiWidgets.SetttingsWidget(self),"Настрйки")
+        self.dialoglistwidget=DialogListWidget.DialogListWidget(self)
+     
+        self.dialogwidget=DialogWidget.DialogWidget(self)
+        self.tabs.addTab(self.dialoglistwidget,"Диалоги")
+        self.tabs.addTab(self.dialogwidget,"Активынй диалог")
+        self.dialoglistwidget.listview.itemClicked.connect(self.ChatListItemClick)
+        self.tabs.addTab(settingsWidget.SetttingsWidget(self),"Настрйки")
 
        
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
 
-
-
+    def ChatListItemClick(self,item):
+       self.dialogwidget.resize(self.width(),self.height())
+       settings.width=self.width()
+       settings.height=self.height()
+       self.tabs.setCurrentWidget(self.dialogwidget)
+       t=Thread(target=self.dialogwidget.OpenDialog,args=( self.dialoglistwidget.listview.itemWidget(item).ID,))
+       t.start()
+       
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -37,18 +46,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.check)
         self.logged=False
-        self.setWindowTitle("VkKivi")
-        self.setGeometry(300, 300, 800, 600)
+        self.setWindowTitle("VkKiwi")
         self.window=LoginWindow.LoginDialog()
         if(self.logged==False):
             self.window.show()
             self.timer.start(300)   
         else:
             self.show()
+    def resizeEvent(self, event):
+        settings.width=int(event.size().width())
+        
+                  
     
    
   
-
+    
     def initUi(self):
         self.mainLayout=QtWidgets.QVBoxLayout()
         self.table_widget = MyTableWidget(self)

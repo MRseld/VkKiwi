@@ -6,16 +6,9 @@ import ApiCalls
 import tools
 import threading 
 import time
+from DialogWidget import DialogWidget
 from multiprocessing import Process
-
-
-class SetttingsWidget(QtWidgets.QWidget):
-    def __init__(self, parent, ):
-        super(SetttingsWidget,self).__init__(parent)
-        self.v=QtWidgets.QVBoxLayout()
-        self.setLayout(self.v)
-        self.lab=QtWidgets.QLabel("Настройки")
-        self.v.addWidget(self.lab)
+import settings
         
 class DialogListWidgetPanel(QtWidgets.QWidget):
     def __init__(self, parent):
@@ -76,58 +69,11 @@ class DialogListWidgetPanel(QtWidgets.QWidget):
     def setImage(self, image: QtGui.QPixmap,round:bool==False):
         if(round==True):
             
-            e=EllipseImage(image,True)
-            image=e.getImage()
+            image=tools.RoundImage(image,True,100,50,50).getImage()
+       
        
         self.ImageLabel.setPixmap(image)
         self.ImageLabel.setFixedSize(QtCore.QSize(50, 50))
-
-class EllipseImage(QtWidgets.QWidget):
-    def __init__(self,  pixmap:QtGui.QPixmap,Antialiasing):
-        super(EllipseImage, self).__init__()
-      
-        self.width=50
-        self.height=50
-        
-        self.radius = 100
-
-        self.target = QtGui.QPixmap(QtCore.QSize(self.width,self.height))  
-        self.target.fill(QtCore.Qt.transparent)    
-
-        p =pixmap.scaled(  
-            50, 50, QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.SmoothTransformation)
-
-        painter = QtGui.QPainter(self.target)
-        if Antialiasing:
-            painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
-            painter.setRenderHint(QtGui.QPainter.HighQualityAntialiasing, True)
-            painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, True)
-
-        path = QtGui.QPainterPath()
-        path.addRoundedRect(
-            0, 0, self.width, self.height, self.radius, self.radius)
-        painter.setClipPath(path)
-        painter.drawPixmap(0, 0, p)
-       
-    def getImage(self):
-        return self.target
-    
-       
-
-class longPollQT(ApiCalls.LongPoll,QtCore.QObject):
-    newMessageSignal=QtCore.Signal(int,dict)
-    dialogIsreadSignal=QtCore.Signal(int,dict)
-     
-    def update(self):
-            
-        self.RequestServer()
-        obj= self.getLongPolldata()
-        print(str(obj["updates"]))
-        for i in range(0,len(obj["updates"])):
-            if(obj["updates"][i][0]==4):
-                self.newMessageSignal.emit(i,obj)
-            if(obj["updates"][i][0]==6):
-                self.dialogIsreadSignal.emit(i,obj)
 
 
 class DialogListWidget(QtWidgets.QWidget):
@@ -141,7 +87,6 @@ class DialogListWidget(QtWidgets.QWidget):
     count = 0
 
     def __init__(self, parent):
-       
         self.LoadingGifStarted=False
         self.loadingsImage=False
         super(DialogListWidget, self).__init__(parent)
@@ -150,7 +95,7 @@ class DialogListWidget(QtWidgets.QWidget):
         #self.standartImage=QtGui.QPixmap("NP.jpg")
        
         self.trigger.connect(self.loadedSlot)
-
+        
 
         self.loader = tools.LoadImage()
         self.standartImage=self.loader.Loadimage("https://vk.com/images/icons/im_multichat_50.png")
@@ -172,8 +117,6 @@ class DialogListWidget(QtWidgets.QWidget):
         
 
 
-       
-     
         t =threading.Thread(target=self.LoadDialogs, args=(50,0))
         t.start()
 
@@ -189,6 +132,7 @@ class DialogListWidget(QtWidgets.QWidget):
         self.Vscroll = QtWidgets.QScrollBar()
         self.Vscroll.valueChanged.connect(self.Vscrolled)
         self.listview.setVerticalScrollBar(self.Vscroll)
+        
 
         self.setLayout(self.layout)
 
@@ -196,6 +140,9 @@ class DialogListWidget(QtWidgets.QWidget):
         lt=threading.Thread(target=self.LongPollStart)
         
         lt.start()
+   
+       
+
 
     def updateElement(self,oldPanel:DialogListWidgetPanel,item):
 
@@ -285,15 +232,10 @@ class DialogListWidget(QtWidgets.QWidget):
                 w.setUnreadCount(0)
                 w.update()
                 break
-
-   
-           
-        
-            
-            
+     
     def LongPollStart(self):
 
-        LPApi=longPollQT()
+        LPApi=tools.longPollQT()
         LPApi.getLongPollServer()
         LPApi.setMode(10)
         LPApi.newMessageSignal.connect(self.newMessageSlot)
@@ -356,36 +298,19 @@ class DialogListWidget(QtWidgets.QWidget):
                                args=( i,))
                     tz.start()
                     
-                    
-                    
-
-                   
-                    
                 elif (str(self.Conversations["response"]["items"][i]["conversation"]["peer"]["type"]) == "user"):
                     tz = threading.Thread(target=self.LoadUserImage,args=(i,))
                     tz.start()
-                  
-                   
-                    
-                  
-                   
+   
                 else:
                     tz =threading.Thread(target=self.loadGroupImage,args=( i,))
                     tz.start()
-                   
-                    
-                    
-                   
+         
             except Exception as ex:
              print(str(ex))
 
         self.oldoffset = self.oldoffset + len(self.Conversations["response"]["items"])
         self.loading=False
-   
-        
-        
-        
-
 
     def LoadDialogs(self, count, offset):
         self.loading=True
@@ -429,9 +354,6 @@ class DialogListWidget(QtWidgets.QWidget):
                         w.setImage(self.loader.Loadimage(group["photo_50"]),True)
                         
                         break
-                   
-                        
-        
 
     def LoadUserImage(self,  index):
         
@@ -460,16 +382,8 @@ class DialogListWidget(QtWidgets.QWidget):
 
                 
                 w.setImage(self.loader.Loadimage(conversation["chat_settings"]["photo"]["photo_50"]),True)
-                
-            
-                  
 
-             
 
-                
-               
-        
-            
     def LoadGroupDialog(self, index: int):
         if(len(self.Conversations["response"]["items"][index]["last_message"]["fwd_messages"]) > 0):
             textMessage = "[Пересланные сообщения]"
@@ -562,7 +476,10 @@ class DialogListWidget(QtWidgets.QWidget):
                 self.trigger.emit(conversation["conversation"]["peer"]["id"], 
                 Ucount, title, textMessage,
                 None)
-                
+
+
+
+
            
             
         

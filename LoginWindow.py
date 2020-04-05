@@ -48,7 +48,9 @@ class LoginDialog(QtWidgets.QDialog):
         self.loginButton.clicked.connect(self.start_login_thread)
         self.setLayout(self.loginLayout)
         self.passwordEdit.setEchoMode(self.passwordEdit.PasswordEchoOnEdit)
+    
         
+      
         
        
 

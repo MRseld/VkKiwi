@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import MainWindow
 import sys
 import settings

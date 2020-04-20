@@ -1,8 +1,11 @@
-import vk_api
+# -*- coding: utf-8 -*-
+
+
 from threading import Thread
 import requests
 import settings
 from PySide2 import QtWidgets
+import vk_api
 
 import time
 class LoginDialog(QtWidgets.QDialog):
@@ -48,7 +51,7 @@ class LoginDialog(QtWidgets.QDialog):
         self.loginButton.clicked.connect(self.start_login_thread)
         self.setLayout(self.loginLayout)
         self.passwordEdit.setEchoMode(self.passwordEdit.PasswordEchoOnEdit)
-    
+       
         
       
         
@@ -66,10 +69,11 @@ class LoginDialog(QtWidgets.QDialog):
 
     def login(self):
         vkSession= vk_api.VkApi(app_id=self._appId,login=self.loginEdit.text(),password=self.passwordEdit.text(),
-        auth_handler=self.two_factor_handler,scope="messages")
+        auth_handler=self.two_factor_handler,scope=268972043)
         try:
             vkSession.auth()
             settings.access_token=vkSession.token['access_token']
+            settings.userid=vkSession.token['user_id']
             self.auth=True
         except vk_api.exceptions.BadPassword:
             print("Вы неверный логин или пароль")

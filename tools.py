@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import requests
 import os
 from PySide2  import QtGui 
@@ -7,29 +8,88 @@ import ApiCalls
 
 import urllib
 
-class LoadImage(QtCore.QObject):
-   LoadFinished=QtCore.Signal(QtGui.QPixmap)
-   def Loadimage(self,url:str):
-      data = urllib.request.urlopen(url).read()
-      pixmap = QtGui.QPixmap()
-      pixmap.loadFromData(data)
-      self.LoadFinished.emit(pixmap)
-      return pixmap
-  
-class RoundImage(QtWidgets.QWidget):
-    def __init__(self,  pixmap:QtGui.QPixmap,Antialiasing:bool,radius:int,width:int,height):
-        super(RoundImage, self).__init__()
+
+class AudioSlider(QtWidgets.QSlider):
+    pass
+class ImageHandler():
+    _image:QtGui.QPixmap=None
+   
+    def getImageFromPath(self,path):
+        return self._imageFromPath(path)
+    def setimageFromPixmap(self,pixmap):
+        self._image=pixmap
+    def setimageFromUrl(self,url):
+        self._image=self._imageFromUrl(url)
+
+    def setimageFromPath(self,path):
+        self._image=self._imageFromPath(path)
+    
+    def _imageFromPath(self,path):
+        pix=QtGui.QPixmap(path)
+        self.width=pix.width
+        self.height=pix.height
+        return pix
+       
+    def getImageFromUrl(self,url):
+        self._image=self._imageFromUrl(url)
+        return self._image
+
+    def _imageFromUrl(self,url:str):      
+      data = urllib.request.urlopen(url).read()      
+      pix = QtGui.QPixmap()
+      pix.loadFromData(data)
+
+      return pix
       
-        self.width=width
-        self.height=height
-        self.radius = radius
-        self.target = QtGui.QPixmap(QtCore.QSize(self.width,self.height))  
-        self.target.fill(QtCore.Qt.transparent)    
+    def resizeImage(self,width,height):
+        self._image= self._image.scaled(QtCore.QSize(width,height),QtCore.Qt.IgnoreAspectRatio)
 
-        p =pixmap.scaled(  
-            self.width, self.height, QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.SmoothTransformation)
+    def resizeRatio(self,width,height):
+        self._image= self._image.scaled(QtCore.QSize(width,height),QtCore.Qt.KeepAspectRatio)
 
-        painter = QtGui.QPainter(self.target)
+    def antialiasing(self):
+        target = QtGui.QPixmap(QtCore.QSize(self.width,self.height))  
+        target.fill(QtCore.Qt.transparent)    
+
+        painter = QtGui.QPainter(target)
+       
+        painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
+        painter.setRenderHint(QtGui.QPainter.HighQualityAntialiasing, True)
+        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, True)
+
+        path = QtGui.QPainterPath()
+        path.addRoundedRect(0, 0, self._image.width(), self._image.height(), 0,0)
+        painter.setClipPath(path)
+        painter.drawPixmap(0, 0, self._image)
+        self._image=target
+
+
+    def drawImage(self,posX,posY,Pixmap,width=None,height=None):
+        painter= QtGui.QPainter(self._image)
+        if width!=None and height!=None:
+            
+            painter.drawPixmap(posX, posY,width,height, Pixmap)
+
+        else:  painter.drawPixmap(posX, posY,Pixmap.width(),Pixmap.height(), Pixmap)
+
+        painter.end()
+    
+    
+    
+    def drawText(self,posX,posY,width,height,text):
+        painter= QtGui.QPainter(self._image)
+        painter.setPen(QtGui.QPen(QtCore.Qt.white))
+        painter.drawText(posX,posY,width,height, QtCore.Qt.AlignLeft, str(text))
+        painter.end()
+
+    def roundImage(self,Antialiasing:bool,radius:int):
+
+        
+
+        target = QtGui.QPixmap(QtCore.QSize(self._image.width(),self._image.height()))  
+        target.fill(QtCore.Qt.transparent)    
+
+        painter = QtGui.QPainter(target)
         if Antialiasing:
             painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
             painter.setRenderHint(QtGui.QPainter.HighQualityAntialiasing, True)
@@ -37,12 +97,20 @@ class RoundImage(QtWidgets.QWidget):
 
         path = QtGui.QPainterPath()
         path.addRoundedRect(
-            0, 0, self.width, self.height, self.radius, self.radius)
+            0, 0, self._image.width(), self._image.height(), radius, radius)
         painter.setClipPath(path)
-        painter.drawPixmap(0, 0, p)
-       
+        painter.drawPixmap(0, 0, self._image)
+
+        self._image=target
+
     def getImage(self):
-        return self.target
+        return self._image
+
+  
+
+       
+  
+
     
        
 class longPollQT(ApiCalls.LongPoll,QtCore.QObject):
@@ -50,7 +118,6 @@ class longPollQT(ApiCalls.LongPoll,QtCore.QObject):
     dialogIsreadSignal=QtCore.Signal(int,dict)
      
     def update(self):
-            
         self.RequestServer()
         obj= self.getLongPolldata()
         print(str(obj["updates"]))

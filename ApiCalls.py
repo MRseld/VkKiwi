@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import settings
 import requests
 import json 
@@ -14,16 +15,13 @@ def VkApiCallMethod(method:str,params:list):
     requestsUrl=settings.api_domain_name+method+"?"+_params+"access_token="+settings.access_token+"&v="+settings.api_version
     print(requestsUrl)
     response= requests.get(requestsUrl).text
-    
-
-
     error=None
-  
     return response
-
-
     
 class Messages():
+    def send(self,peer_id,text):
+        return json.loads(VkApiCallMethod("messages.send",["random_id=1","peer_id="+str(peer_id),"message="+str(text)]))
+
     def get(self,count,offset,extended):
       
         return json.loads(VkApiCallMethod("messages.getConversations",["extended="+str(extended), "count="+str(count),"offset="+str(offset)]))
@@ -32,7 +30,50 @@ class Messages():
         return json.loads( VkApiCallMethod("messages.getHistory",["count="+str(count),"offset="+str(offset),"peer_id="+str(peer_id),
         "rev="+str(rev),"extended="+str(extended)]) )
 
+class Audios():
+    def get(self,count,offset,owner_id=None):
+        if(owner_id!=None):
+           return json.loads(VkApiCallMethod(
+           "audio.get",[
+               "owner_id="+str(owner_id),
+               "offset="+str(offset),
+                "count="+str(count)
+           ]
+            ))
+        else:
+            return json.loads(VkApiCallMethod(
+           "audio.get",[
+               "offset="+str(offset),
+                "count="+str(count)
+           ]
+            ))
+    def getAlbums(self,count,offset,owner_id=None):
+        if(owner_id!=None):
+           return json.loads(VkApiCallMethod(
+           "audio.getPlaylists",[
+               "owner_id="+str(owner_id),
+               "offset="+str(offset),
+                "count="+str(count)
+           ]
+            ))
+        else:
+            return json.loads(VkApiCallMethod(
+           "audio.getPlaylists",[
+               "owner_id="+str(settings.userid),
+               "offset="+str(offset),
+               "count="+str(count)
+           ]
+            ))
+    def getById(self,owner_id,audio_id):
+        return json.loads(VkApiCallMethod("audio.getById",[
+            "audios="+str(owner_id)+"_"+str(audio_id)
+        ]
+        ))
+
+    
+
         
+    
 
       
 

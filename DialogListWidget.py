@@ -1,4 +1,5 @@
 
+# -*- coding: utf-8 -*-
 from PySide2 import QtWidgets
 from PySide2 import QtGui
 from PySide2 import QtCore
@@ -69,7 +70,14 @@ class DialogListWidgetPanel(QtWidgets.QWidget):
     def setImage(self, image: QtGui.QPixmap,round:bool==False):
         if(round==True):
             
-            image=tools.RoundImage(image,True,100,50,50).getImage()
+            handlerImage= tools.ImageHandler()
+
+            handlerImage.setimageFromPixmap (image)
+            handlerImage.resizeImage(50,50)
+            handlerImage.roundImage(True,100)
+
+            image=handlerImage.getImage()
+
        
        
         self.ImageLabel.setPixmap(image)
@@ -97,8 +105,8 @@ class DialogListWidget(QtWidgets.QWidget):
         self.trigger.connect(self.loadedSlot)
         
 
-        self.loader = tools.LoadImage()
-        self.standartImage=self.loader.Loadimage("https://vk.com/images/icons/im_multichat_50.png")
+        self.imagehandler= tools.ImageHandler()
+        self.standartImage=self.imagehandler.getImageFromUrl("https://vk.com/images/icons/im_multichat_50.png")
    
 
         self.timerQ = QtCore.QTimer(self)
@@ -170,12 +178,6 @@ class DialogListWidget(QtWidgets.QWidget):
 
     def GetFlags(self,Flags):
         t=Flags
-        """
-        'UNREAD':1,'OUTBOX':2,'REPLIED':4,'IMPORTANT':8,'CHAT':16,'FRIENDS':32,'SPAM':64,
-        'DELETED':128,'FIXED':256,'MEDIA':512,'UNKNOWN1':1024,'UNKNOWN2':2048,'UNKNOWN3':4096,
-        'UNREAD_MULTICHAT':8192, 'UNKNOWN4':16384,'UNKNOWN5': 32768,'HIDDEN':65536,'DELETE_FOR_ALL':131072,
-        'NOT_DELIVERED':262144,'UNKNOWN6':524288,'UNKNOWN7':1048576,'UNKNOWN8':2097152,'UNKNOWN9':4194304
-        """
         correctFlags=[]
 
         FLAGS={'UNKNOWN9':4194304,'UNKNOWN8':2097152,'UNKNOWN7':1048576,'UNKNOWN6':524288,
@@ -188,18 +190,11 @@ class DialogListWidget(QtWidgets.QWidget):
                 correctFlags.append(flag)
         return correctFlags
                 
-                
-            
-
     def newMessageSlot(self,index,object):
-        
-        
         for i in range(0,self.listview.count()):
-
               w: DialogListWidgetPanel = self.listview.itemWidget(
                         self.listview.item(i))
               if w!=None:
-
                 if(object["updates"][index][3]==w.getID()):
                     if object["updates"][index][5]!=None:
                         w.setText(object["updates"][index][5])
@@ -211,15 +206,24 @@ class DialogListWidget(QtWidgets.QWidget):
                         w.setUnreadCount(0)
                 
                     else:w.setUnreadCount(w.getUnreadCount()+1)
-                    
-              
                     item:QtWidgets.QListWidgetItem=self.listview.item(i) 
-
                     self.listview.takeItem(i)
                     self.listview.insertItem(0,item)   
-                    self.updateElement(w,item)
-               
+                    self.updateElement(w,item)        
                     break
+
+     
+    def LongPollStart(self):
+        LPApi=tools.longPollQT()
+        LPApi.getLongPollServer()
+        LPApi.setMode(10)
+        LPApi.newMessageSignal.connect(self.newMessageSlot)
+        LPApi.dialogIsreadSignal.connect(self.dialogIsreadSlot)
+        while True:
+            while self.loading==True:
+                time.sleep(0.2)
+            LPApi.update()
+            
     
     def dialogIsreadSlot(self,index,object:dict):
        if self.loading==False:
@@ -232,18 +236,7 @@ class DialogListWidget(QtWidgets.QWidget):
                 w.setUnreadCount(0)
                 w.update()
                 break
-     
-    def LongPollStart(self):
-
-        LPApi=tools.longPollQT()
-        LPApi.getLongPollServer()
-        LPApi.setMode(10)
-        LPApi.newMessageSignal.connect(self.newMessageSlot)
-        LPApi.dialogIsreadSignal.connect(self.dialogIsreadSlot)
-        while True:
-            while self.loading==True:
-                time.sleep(0.2)
-            LPApi.update()
+    
 
     def Vscrolled(self, i):
         if(self.Vscroll.maximum() == i):
@@ -253,7 +246,7 @@ class DialogListWidget(QtWidgets.QWidget):
                     t.start()
 
     def loadImageThread(self, panel:DialogListWidgetPanel,url):
-        panel.setImage(self.loader.Loadimage(url),True)
+        panel.setImage(self.imagehandler.getImageFromUrl(url),True)
        
 
     def loadedSlot(self,id, unreadcount, title, text,imageUrl):
@@ -351,7 +344,7 @@ class DialogListWidget(QtWidgets.QWidget):
                         w: DialogListWidgetPanel = self.listview.itemWidget(
                             self.listview.item(self.oldoffset+index))
                         
-                        w.setImage(self.loader.Loadimage(group["photo_50"]),True)
+                        w.setImage(self.imagehandler.getImageFromUrl(group["photo_50"]),True)
                         
                         break
 
@@ -367,7 +360,7 @@ class DialogListWidget(QtWidgets.QWidget):
                             self.listview.item(self.oldoffset+index))
                   
                    
-                    w.setImage(self.loader.Loadimage(profile["photo_50"]),True)
+                    w.setImage(self.imagehandler.getImageFromUrl(profile["photo_50"]),True)
                     
                     break
         
@@ -381,7 +374,7 @@ class DialogListWidget(QtWidgets.QWidget):
                         self.listview.item(self.oldoffset+index))
 
                 
-                w.setImage(self.loader.Loadimage(conversation["chat_settings"]["photo"]["photo_50"]),True)
+                w.setImage(self.imagehandler.getImageFromUrl(conversation["chat_settings"]["photo"]["photo_50"]),True)
 
 
     def LoadGroupDialog(self, index: int):

@@ -13,10 +13,12 @@ def VkApiCallMethod(method:str,params:list):
         _params=_params+i+"&"
 
     requestsUrl=settings.api_domain_name+method+"?"+_params+"access_token="+settings.access_token+"&v="+settings.api_version
-    print(requestsUrl)
+   # print(requestsUrl)
     response= requests.get(requestsUrl).text
     error=None
+   # print(response)
     return response
+    
     
 class Messages():
     def send(self,peer_id,text):
@@ -31,8 +33,19 @@ class Messages():
         "rev="+str(rev),"extended="+str(extended)]) )
 
 class Audios():
-    def get(self,count,offset,owner_id=None):
+    def get(self,count:int,offset:int,owner_id:int=None,albumID:int=None):
         if(owner_id!=None):
+
+           if(albumID!=None):
+                return json.loads(VkApiCallMethod(
+                "audio.get",[
+               "owner_id="+str(owner_id),
+               "offset="+str(offset),
+                "count="+str(count),
+                "album_id="+str(albumID)
+                ]
+                ))
+
            return json.loads(VkApiCallMethod(
            "audio.get",[
                "owner_id="+str(owner_id),
@@ -40,13 +53,25 @@ class Audios():
                 "count="+str(count)
            ]
             ))
+
         else:
+            if(albumID!=None):
+                return json.loads(VkApiCallMethod(
+                "audio.get",[
+                "offset="+str(offset),
+                "count="+str(count),
+                "album_id="+str(albumID)
+                ]
+                ))
+
             return json.loads(VkApiCallMethod(
            "audio.get",[
                "offset="+str(offset),
                 "count="+str(count)
+                
            ]
             ))
+    
     def getAlbums(self,count,offset,owner_id=None):
         if(owner_id!=None):
            return json.loads(VkApiCallMethod(
@@ -70,13 +95,6 @@ class Audios():
         ]
         ))
 
-    
-
-        
-    
-
-      
-
 class LongPoll():
     _longpolldata=None
   
@@ -95,7 +113,10 @@ class LongPoll():
     def RequestServer(self):
         request= requests.get( "https://"+self.getServer()+"?act=a_check&key="+str(self.getKey())+"&ts="+str(self.getTs())+"&wait=25&mode="+str(self.getMode())+"&version=3").text
         self._longpolldata=json.loads(request)
-        self.setTs(self._longpolldata["ts"])
+        if "Failed" in self._longpolldata:
+            self.getLongPollServer()
+        else:
+            self.setTs(self._longpolldata["ts"])
   
     def getLongPolldata(self):
         return self._longpolldata

@@ -9,8 +9,7 @@ import ApiCalls
 import urllib
 
 
-class AudioSlider(QtWidgets.QSlider):
-    pass
+        
 class ImageHandler():
     _image:QtGui.QPixmap=None
    

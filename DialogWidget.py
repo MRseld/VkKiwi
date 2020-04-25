@@ -127,7 +127,7 @@ class DialogWidget(QtWidgets.QWidget):
         
         super(DialogWidget,self).__init__(parent )
 
-        self.popupWidget=contextWidget(parent)
+       
 
         self.playImageHandler=tools.ImageHandler()
         self.playImageHandler.setimageFromPath("icons/play2.ico")
@@ -194,6 +194,7 @@ class DialogWidget(QtWidgets.QWidget):
        
     def attachClick(self,event:QtGui.QMouseEvent):
         QtWidgets.QMenu("ts")
+        
     def sendClicked(self,event:QtGui.QMouseEvent ):
         if(len( self.messageTextEdit.toPlainText())>0):
           ms=  ApiCalls.Messages()

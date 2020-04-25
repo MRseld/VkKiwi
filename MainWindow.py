@@ -60,7 +60,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.pinned=True
         self.top=False
-        keyboard.add_hotkey('Ctrl + 1', self.openTopWindow)
+        #keyboard.add_hotkey('Ctrl + 1', self.openTopWindow)
     
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)

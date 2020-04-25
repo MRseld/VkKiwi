@@ -57,7 +57,7 @@ class LoginDialog(QtWidgets.QDialog):
         
        
 
-
+   
     def start_login_thread(self):
          t =Thread(target= self.login)
          t.isDaemon=True

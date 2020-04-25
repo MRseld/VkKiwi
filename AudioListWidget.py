@@ -9,8 +9,10 @@ import threading
 import settings
 
 class AudioSlider(QtWidgets.QSlider):
+    clicked=QtCore.Signal(int)
     def __init__(self, orientation, parent):
         super().__init__(orientation, parent)
+
         self.setOrientation(orientation)
         self.setStyleSheet("QSlider::groove:horizontal {\
           border: 1px solid black;\
@@ -54,6 +56,8 @@ class AudioSlider(QtWidgets.QSlider):
         if event.button() == QtCore.Qt.LeftButton:
             val = self.pixelPosToRangeValue(event.pos())
             self.setValue(val)
+            self.clicked.emit(val)
+            
 
     def pixelPosToRangeValue(self, pos):
         opt = QtWidgets.QStyleOptionSlider()
@@ -142,8 +146,9 @@ class AudioListWidget(QtWidgets.QWidget):
       self.loaddatatImage=[]
       self.LoadingGifStarted=False
       self.loading=False
+      self.playIndex=0;
 
-      self.Playing=False;
+      self.playing=False;
 
 
       self.MainLayout=QtWidgets.QVBoxLayout()
@@ -165,6 +170,10 @@ class AudioListWidget(QtWidgets.QWidget):
       self.durationLabel=QtWidgets.QLabel("0");
       self.AudioTitleLabel=QtWidgets.QLabel()
 
+      self.stopAndPLayIconLabel.clicked.connect(self.playPauseClick)
+      self.backAudioIconLabel.clicked.connect(self.backAudioClick)
+      self.nextAudioIconLabel.clicked.connect(self.nextAudioClick)
+
       self.playlistIconHandler=tools.ImageHandler()
       self.playlistIconHandler.setimageFromPath("icons/playlist.png")
 
@@ -180,11 +189,14 @@ class AudioListWidget(QtWidgets.QWidget):
       self.nextAudioIconHandler=tools.ImageHandler()
       self.nextAudioIconHandler.setimageFromPath("icons/audionext.png")
 
-      self.stopAndPLayIconLabel.setPixmap(self.stopIconHandler.getImage())
+      self.stopAndPLayIconLabel.setPixmap(self.playIconHandler.getImage())
       self.backAudioIconLabel.setPixmap(self.backAudioIconHandler.getImage())
       self.nextAudioIconLabel.setPixmap(self.nextAudioIconHandler.getImage())
 
+
+
       self.audioslider=AudioSlider(QtGui.Qt.Orientation.Horizontal,self)
+      self.audioslider.clicked.connect(self.sliderClick)
           
 
       self.ControlPanel.addWidget(self.backAudioIconLabel)
@@ -216,12 +228,37 @@ class AudioListWidget(QtWidgets.QWidget):
       AudioPlayer.player.durationChanged.connect(self.durationChanged)
 
     def nextAudioClick(self,event):
-       pass
+        if len(self.ActiveAudioList)>0:
+            self.playIndex=self.playIndex+1
+            audio:dict= self.audio.getById(self.ActiveAudioList[self.playIndex]["owner_id"],self.ActiveAudioList[self.playIndex]["id"])
+            audio=audio["response"]
+            self.startPlay(audio)
+
     
     def backAudioClick(self,event):
-        pass
+         if len(self.ActiveAudioList)>0:
+            self.playIndex=self.playIndex-1
+            audio:dict= self.audio.getById(self.ActiveAudioList[self.playIndex]["owner_id"],self.ActiveAudioList[self.playIndex]["id"])
+            audio=audio["response"]
+            self.startPlay(audio)
+
     def playPauseClick(self,event):
-        pass
+        if self.playing==True:
+            AudioPlayer.pause()
+            self.stopAndPLayIconLabel.setPixmap(self.playIconHandler.getImage())
+            self.playing=False
+            print("stoped")
+        else:
+            print(str(AudioPlayer.Isloaded()))
+            if AudioPlayer.Isloaded()==True:
+                AudioPlayer.play()
+                AudioPlayer.setPosition(AudioPlayer.currectDuration)
+                self.stopAndPLayIconLabel.setPixmap(self.stopIconHandler.getImage())
+                self.playing=True
+                print("played")
+
+    def sliderClick(self,value):
+        AudioPlayer.setPosition( value)
 
     def playlistItemClicker(self,item):
        self.audioListWidget.clear()
@@ -242,6 +279,7 @@ class AudioListWidget(QtWidgets.QWidget):
        items:dict=self.ActiveAudioList;
        audio:dict= self.audio.getById(items[itemid]["owner_id"],items[itemid]["id"])
        audio=audio["response"]
+       self.playIndex=itemid;
 
        self.startPlay(audio)
     def startPlay(self,audio):
@@ -252,6 +290,8 @@ class AudioListWidget(QtWidgets.QWidget):
         AudioPlayer.setAudio( audio[0]["url"]);
         AudioPlayer.setVolume(50)
         AudioPlayer.play()
+        self.playing=True;
+        self.stopAndPLayIconLabel.setPixmap(self.stopIconHandler.getImage())
 
     def positionChanged(self,data):
         n=data/1000
@@ -259,6 +299,7 @@ class AudioListWidget(QtWidgets.QWidget):
         minutes=int(d/60)
         seconds=int(d%60)
         Ptime=str(minutes)+":"+str(seconds)
+        AudioPlayer.currectDuration=data
 
         n=AudioPlayer.activeDuration/1000
         d=int(n) 

@@ -5,22 +5,30 @@ from PySide2  import QtGui
 from PySide2 import QtCore
 from PySide2 import QtWidgets 
 import ApiCalls
-
+import  time
 import urllib
 
+def time_to_human_time(timeValue):
 
-        
+    d=int( timeValue/1000)
+    minutes=int(d/60)
+    seconds=int(d%60)
+    return  str(minutes)+":"+str(seconds)
+def time_to_date(timeValue):
+    return  time.localtime(timeValue)
+
 class ImageHandler():
     _image:QtGui.QPixmap=None
    
-    def getImageFromPath(self,path):
+    def get_image_from_path(self,path):
         return self._imageFromPath(path)
-    def setimageFromPixmap(self,pixmap):
+
+    def set_image_from_pixmap(self,pixmap):
         self._image=pixmap
-    def setimageFromUrl(self,url):
+    def set_image_from_url(self,url):
         self._image=self._imageFromUrl(url)
 
-    def setimageFromPath(self,path):
+    def set_image_from_path(self,path):
         self._image=self._imageFromPath(path)
     
     def _imageFromPath(self,path):
@@ -29,7 +37,7 @@ class ImageHandler():
         self.height=pix.height
         return pix
        
-    def getImageFromUrl(self,url):
+    def get_image_from_url(self,url):
         self._image=self._imageFromUrl(url)
         return self._image
 
@@ -40,30 +48,13 @@ class ImageHandler():
 
       return pix
       
-    def resizeImage(self,width,height):
+    def resize_image(self,width,height):
         self._image= self._image.scaled(QtCore.QSize(width,height),QtCore.Qt.IgnoreAspectRatio)
 
-    def resizeRatio(self,width,height):
+    def resize_ratio(self,width,height):
         self._image= self._image.scaled(QtCore.QSize(width,height),QtCore.Qt.KeepAspectRatio)
 
-    def antialiasing(self):
-        target = QtGui.QPixmap(QtCore.QSize(self.width,self.height))  
-        target.fill(QtCore.Qt.transparent)    
-
-        painter = QtGui.QPainter(target)
-       
-        painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
-        painter.setRenderHint(QtGui.QPainter.HighQualityAntialiasing, True)
-        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, True)
-
-        path = QtGui.QPainterPath()
-        path.addRoundedRect(0, 0, self._image.width(), self._image.height(), 0,0)
-        painter.setClipPath(path)
-        painter.drawPixmap(0, 0, self._image)
-        self._image=target
-
-
-    def drawImage(self,posX,posY,Pixmap,width=None,height=None):
+    def draw_image(self,posX,posY,Pixmap,width=None,height=None):
         painter= QtGui.QPainter(self._image)
         if width!=None and height!=None:
             
@@ -72,18 +63,14 @@ class ImageHandler():
         else:  painter.drawPixmap(posX, posY,Pixmap.width(),Pixmap.height(), Pixmap)
 
         painter.end()
-    
-    
-    
-    def drawText(self,posX,posY,width,height,text):
+
+    def draw_text(self,posX,posY,width,height,text):
         painter= QtGui.QPainter(self._image)
         painter.setPen(QtGui.QPen(QtCore.Qt.white))
         painter.drawText(posX,posY,width,height, QtCore.Qt.AlignLeft, str(text))
         painter.end()
 
-    def roundImage(self,Antialiasing:bool,radius:int):
-
-        
+    def round_image(self,Antialiasing:bool,radius:int):
 
         target = QtGui.QPixmap(QtCore.QSize(self._image.width(),self._image.height()))  
         target.fill(QtCore.Qt.transparent)    
@@ -102,19 +89,12 @@ class ImageHandler():
 
         self._image=target
 
-    def getImage(self):
+    def get_image(self):
         return self._image
-
-  
-
-       
-  
-
-    
        
 class longPollQT(ApiCalls.LongPoll,QtCore.QObject):
-    newMessageSignal=QtCore.Signal(int,dict)
-    dialogIsreadSignal=QtCore.Signal(int,dict)
+    signalNewMessage=QtCore.Signal(int,dict)
+    signalDialogIsread=QtCore.Signal(int,dict)
      
     def update(self):
         self.RequestServer()
@@ -122,11 +102,7 @@ class longPollQT(ApiCalls.LongPoll,QtCore.QObject):
         print(str(obj["updates"]))
         for i in range(0,len(obj["updates"])):
             if(obj["updates"][i][0]==4):
-                self.newMessageSignal.emit(i,obj)
+                self.signalNewMessage.emit(i,obj)
             if(obj["updates"][i][0]==6):
-                self.dialogIsreadSignal.emit(i,obj)
+                self.signalDialogIsread.emit(i,obj)
       
-
- 
-
-           

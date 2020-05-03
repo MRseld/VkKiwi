@@ -6,11 +6,11 @@
     def LoadingGif(self):
         if self.LoadingGifStarted==False:
             if self.loading==True:
-                self.loadingLabel.show()
-                self.loadgif.start()
+                self.labelLoading.show()
+                self.movieLoadGif.start()
                 self.LoadingGifStarted=True
         else:
             if self.loading==False:
-                self.loadgif.stop()
-                self.loadingLabel.hide()
+                self.movieLoadGif.stop()
+                self.labelLoading.hide()
                 self.LoadingGifStarted=False
